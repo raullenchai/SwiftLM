@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build_and_unit_test:
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
 
   integration_matrix:
     needs: build_and_unit_test
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -192,7 +192,7 @@ jobs:
   # Uses the standard macos-15 runner (7 GB RAM). 
   # We test the 4B main model which safely fits within memory.
   speculative-decoding:
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 45
     needs: build_and_unit_test  # Run in parallel with integration_matrix
     steps:
@@ -292,7 +292,7 @@ jobs:
   # ── DFlash Speculative Decoding E2E ──
   # Uses the standard macos-15 runner (7 GB RAM). 
   dflash-speculative-decoding:
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 45
     needs: build_and_unit_test
     steps:
@@ -390,7 +390,7 @@ jobs:
   # Runs the 2B model with NUM_DRAFT_TOKENS=2 to check peak
   # memory compression/efficiency. Emits vm_stat readings as step summary.
   speculative-decoding-eval:
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 45
     needs: build_and_unit_test
     continue-on-error: true
@@ -542,7 +542,7 @@ jobs:
   #   [2] Peak RAM ≤ 85% of runner physical RAM during inference
   #   [3] /v1/chat/completions returns valid content
   ssd-draft-memory-guard:
-    runs-on: macos-15
+    runs-on: manzanita-standard
     timeout-minutes: 45
     needs: build_and_unit_test
     steps:
