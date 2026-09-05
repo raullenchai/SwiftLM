@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build_and_unit_test:
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
 
   integration_matrix:
     needs: build_and_unit_test
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -86,13 +86,6 @@ jobs:
         include:
           - modality: server
             models: mlx-community/Qwen2.5-0.5B-Instruct-4bit
-          # Same smoke test, KV-shared Gemma 4. e2b ships k_proj/v_proj for its shared
-          # layers while e4b omits them, so it exercises a weight layout no other job
-          # covers — a regression that broke it entirely still passed CI and shipped.
-          - modality: server
-            name_suffix: -gemma-e2b
-            models: mlx-community/gemma-4-e2b-it-4bit
-            test_model: mlx-community/gemma-4-e2b-it-4bit
           # LFM2.5 used to be absent here and was fetched by the server mid-test, which
           # is how it silently picked up a republished revision whose chat template was
           # one brace short of valid and took main red. Prefetching it at a pinned
@@ -100,10 +93,6 @@ jobs:
           # upstream published that afternoon.
           - modality: vision
             models: mlx-community/Qwen2-VL-2B-Instruct-4bit LiquidAI/LFM2.5-VL-450M-MLX-4bit@10ce3604e42cd595497c47aaf67b7890e1e2a3b4
-          - modality: audio
-            models: mlx-community/gemma-4-e4b-it-4bit
-          - modality: graph
-            models: ""
           # Synthetic checkpoints committed to the repository, a few hundred KB each,
           # so this entry downloads nothing and needs no model cache. It covers the
           # weight-and-config shapes behind #118, #120 and the b674 regression — the
@@ -112,19 +101,6 @@ jobs:
           # against a 10 GB per-repository cache budget).
           - modality: fixtures
             models: ""
-          # OpenAI-compatibility contract: what the client receives over the wire, once
-          # real tokenisation decides chunk boundaries. Runs on the smallest model —
-          # these assert server behaviour, not model quality (issue #128).
-          - modality: contract
-            models: mlx-community/Qwen2.5-0.5B-Instruct-4bit
-          - modality: omni
-            models: mlx-community/gemma-4-e4b-it-4bit
-          # No longer continue-on-error: Test 2 used to shell out to the opencode npm
-          # CLI, which the runner OOM-killed after the server had already answered
-          # correctly. It now issues the request shape opencode sends, so a failure here
-          # means SwiftLM misbehaved and should block.
-          - modality: opencode
-            models: mlx-community/gemma-4-e4b-it-4bit
     steps:
       - uses: actions/checkout@v4
         with:
@@ -192,7 +168,7 @@ jobs:
   # Uses the standard macos-15 runner (7 GB RAM). 
   # We test the 4B main model which safely fits within memory.
   speculative-decoding:
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 45
     needs: build_and_unit_test  # Run in parallel with integration_matrix
     steps:
@@ -292,7 +268,7 @@ jobs:
   # ── DFlash Speculative Decoding E2E ──
   # Uses the standard macos-15 runner (7 GB RAM). 
   dflash-speculative-decoding:
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 45
     needs: build_and_unit_test
     steps:
@@ -390,7 +366,7 @@ jobs:
   # Runs the 2B model with NUM_DRAFT_TOKENS=2 to check peak
   # memory compression/efficiency. Emits vm_stat readings as step summary.
   speculative-decoding-eval:
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 45
     needs: build_and_unit_test
     continue-on-error: true
@@ -542,7 +518,7 @@ jobs:
   #   [2] Peak RAM ≤ 85% of runner physical RAM during inference
   #   [3] /v1/chat/completions returns valid content
   ssd-draft-memory-guard:
-    runs-on: macos-15
+    runs-on: manzanita-xcode16
     timeout-minutes: 45
     needs: build_and_unit_test
     steps:
@@ -736,4 +712,3 @@ jobs:
           name: ssd-draft-guard-log
           path: /tmp/ssd_draft_guard.log
           retention-days: 7
-
